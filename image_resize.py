@@ -42,40 +42,47 @@ def get_arguments():
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+def main():
     arguments = get_arguments()
 
+    if arguments.scale and arguments.width or arguments.scale and arguments.height:
+        raise Parameters_error('"width", "height" can not be specified together with "scale"')
+
+    if arguments.width is None and arguments.scale is None and arguments.height is None:
+        raise Parameters_error('no parameters to resize')
+
+    if arguments.scale:
+        image_out = resize_scale_image(
+            arguments.path,
+            arguments.scale
+            )
+        save_image(
+            arguments.path,
+            arguments.output,
+            image_out
+            )
+
+    if arguments.width or arguments.height:
+        image_out = resize_width_height_image(
+            arguments.path,
+            arguments.width,
+            arguments.height
+            )
+        save_image(
+            arguments.path,
+            arguments.output,
+            image_out
+            )
+
+
+if __name__ == '__main__':
+
+    class Parameters_error(Exception):
+        pass
+
     try:
-        if arguments.scale and arguments.width or arguments.scale and arguments.height:
-            raise Exception('"width", "height" can not be specified together with "scale"')
-
-        if arguments.width is None and arguments.scale is None and arguments.height is None:
-            raise Exception('no parameters to resize')
-
-        if arguments.scale:
-            image_out = resize_scale_image(
-                arguments.path,
-                arguments.scale
-                )
-            save_image(
-                arguments.path,
-                arguments.output,
-                image_out
-                )
-
-        if arguments.width or arguments.height:
-            image_out = resize_width_height_image(
-                arguments.path,
-                arguments.width,
-                arguments.height
-                )
-            save_image(
-                arguments.path,
-                arguments.output,
-                image_out
-                )
-
+        main()
     except IOError as error:
         print(' ERROR: {}'.format(error))
-    except Exception as error:
+    except Parameters_error as error:
         print(' ERROR: {}'.format(error))
