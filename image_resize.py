@@ -35,6 +35,20 @@ def save_image_resizing(path_to_original, path_to_result, image_out):
     image_out.save(os.path.join(path_to_result, out_file_name))
 
 
+def open_origin_image(path_to_original):
+    return Image.open(path_to_original)
+
+
+def checking_arguments(scale, width, height):
+    parser_error = argparse.ArgumentParser(description='errors in parameters')
+
+    if scale and (width or height):
+        raise parser_error.error('ERROR: scale width height - together')
+
+    if not any([scale, width, height]):
+        raise parser_error.error('ERROR: no parameters in arguments')
+
+
 def get_arguments():
 
     parser = argparse.ArgumentParser(
@@ -61,19 +75,12 @@ def get_arguments():
     return parser.parse_args()
 
 
-def main():
+if __name__ == '__main__':
     arguments = get_arguments()
-    parser_error = argparse.ArgumentParser(description='errors in parameters')
 
     try:
-
-        if arguments.scale and (arguments.width or arguments.height):
-            raise parser_error.error('ERROR: scale width height - together')
-
-        if not any([arguments.width, arguments.scale, arguments.height]):
-            raise parser_error.error('ERROR: no parameters in arguments')
-
-        image_handler = Image.open(arguments.path)
+        checking_arguments(arguments.scale, arguments.width, arguments.height)
+        image_handler = open_origin_image(arguments.path)
 
         if arguments.scale:
             image_out = get_image_resize_to_scale(
@@ -100,7 +107,3 @@ def main():
 
     except IOError as error:
         print(' ERROR: {}'.format(error))
-
-
-if __name__ == '__main__':
-    main()
