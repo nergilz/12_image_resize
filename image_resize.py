@@ -61,7 +61,7 @@ def get_arguments():
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+def main():
     arguments = get_arguments()
     parser_error = argparse.ArgumentParser(description='errors in parameters')
 
@@ -100,3 +100,7 @@ if __name__ == '__main__':
 
     except IOError as error:
         print(' ERROR: {}'.format(error))
+
+
+if __name__ == '__main__':
+    main()
