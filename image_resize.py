@@ -39,7 +39,7 @@ def get_arguments():
     return parser.parse_args()
 
 
-def checking_arguments(scale, width, height):
+def check_arguments(scale, width, height, output):
     parser = argparse.ArgumentParser(description='Errors in parameters')
 
     if scale and (width or height):
@@ -48,63 +48,79 @@ def checking_arguments(scale, width, height):
     if not any([scale, width, height]):
         parser.error('ERROR: no parameters in arguments')
 
+    if not os.path.isdir(output):
+        parser.error('ERROR: not find directory {}'.format(output))
 
-def get_resize_by_scale(x_base, y_base, scale):
 
-    x_size = int(x_base * scale)
-    y_size = int(y_base * scale)
+def get_new_size(x_size, y_size, scale, width, height):
+
+    if scale:
+        x_size = int(x_size * scale)
+        y_size = int(y_size * scale)
+    if width and height:
+        x_size = width
+        y_size = height
+    if width and not height:
+        x_size = width
+    if height and not width:
+        y_size = height
+
     return x_size, y_size
 
 
-def get_resize_by_width_height(width, height):
-    return width, height
+def get_file_name_out(x_size, y_size, path_to_original):
+
+    file_fullname = os.path.basename(path_to_original)
+    file_name, file_extension = os.path.splitext(file_fullname)
+
+    return '{}__{}x{}.{}'.format(
+        file_name,
+        x_size,
+        y_size,
+        file_extension
+        )
 
 
-def save_image_resizing(path_to_original, path_to_result, image_out):
+def save_resized_image(image_out, file_name_out, path_to_result):
 
-    if os.path.isdir(path_to_result):
-        x_size, y_size = image_out.size
-        file_fullname = os.path.basename(path_to_original)
-        file_name, file_extension = os.path.splitext(file_fullname)
-        out_file_name = '{}__{}x{}.{}'.format(
-            file_name,
-            x_size,
-            y_size,
-            file_extension
-            )
-        image_out.save(os.path.join(path_to_result, out_file_name))
-    else:
-        print('ERROR: not find directory "{}"'.format(path_to_result))
+        image_out.save(os.path.join(path_to_result, file_name_out))
 
 
 if __name__ == '__main__':
     arguments = get_arguments()
-    checking_arguments(arguments.scale, arguments.width, arguments.height)
 
+    check_arguments(
+        arguments.scale,
+        arguments.width,
+        arguments.height,
+        arguments.output
+        )
     try:
         image = Image.open(arguments.path)
         x_size, y_size = image.size
 
-        if arguments.scale:
-            x_size, y_size = get_resize_by_scale(
-                x_size,
-                y_size,
-                arguments.scale
-                )
+        x_new, y_new = get_new_size(
+            x_size,
+            y_size,
+            arguments.scale,
+            arguments.width,
+            arguments.height
+            )
 
-        if arguments.width or arguments.height:
-            x_size, y_size = get_resize_by_width_height(
-                arguments.width,
-                arguments.height
-                )
-
-        image_out = image.resize((x_size, y_size))
-
-        save_image_resizing(
-            arguments.path,
+        file_name_out = get_file_name_out(
+            x_new,
+            y_new,
+            arguments.path
+            )
+        image = image.resize((x_new, y_new))
+        save_resized_image(
+            image,
+            file_name_out,
             arguments.output,
-            image_out
             )
 
     except IOError as error:
-        print(' ERROR_IOError: {}'.format(error))
+        print('ERROR: {}'.format(error))
+
+    except FileNotFoundError as error:
+        print('ERROR: {}'.format(error))
