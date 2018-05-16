@@ -81,11 +81,6 @@ def get_file_name_out(x_size, y_size, path_to_original):
         )
 
 
-def save_resized_image(image_out, file_name_out, path_to_result):
-
-        image_out.save(os.path.join(path_to_result, file_name_out))
-
-
 if __name__ == '__main__':
     arguments = get_arguments()
 
@@ -106,18 +101,13 @@ if __name__ == '__main__':
             arguments.width,
             arguments.height
             )
-
         file_name_out = get_file_name_out(
             x_new,
             y_new,
             arguments.path
             )
         image = image.resize((x_new, y_new))
-        save_resized_image(
-            image,
-            file_name_out,
-            arguments.output,
-            )
+        image.save(os.path.join(arguments.output, file_name_out))
 
     except IOError as error:
         print('ERROR: {}'.format(error))
