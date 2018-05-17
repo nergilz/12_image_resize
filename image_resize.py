@@ -51,21 +51,29 @@ def check_arguments(scale, width, height, output):
     if not os.path.isdir(output):
         parser.error('ERROR: not find directory {}'.format(output))
 
+    if (width and not height) or (height and not width):
+        print('The proportions of the image will be changed!')
+
 
 def get_new_size(x_size, y_size, scale, width, height):
 
     if scale:
         x_size = int(x_size * scale)
         y_size = int(y_size * scale)
-    if width and height:
-        x_size = width
-        y_size = height
-    if width and not height:
-        x_size = width
-    if height and not width:
-        y_size = height
+        return x_size, y_size
 
-    return x_size, y_size
+    if width and height:
+        return width, height
+
+    if width and not height:
+        ratio = width / x_size
+        height = int(y_size * ratio)
+        return width, height
+
+    if height and not width:
+        ratio = height / y_size
+        width = int(x_size * ratio)
+        return width, height
 
 
 def get_file_name_out(x_size, y_size, path_to_original):
@@ -92,11 +100,15 @@ if __name__ == '__main__':
         )
     try:
         image = Image.open(arguments.path)
-        x_size, y_size = image.size
 
+    except IOError as error:
+        print('ERROR: {}'.format(error))
+
+    else:
+        x_base, y_base = image.size
         x_new, y_new = get_new_size(
-            x_size,
-            y_size,
+            x_base,
+            y_base,
             arguments.scale,
             arguments.width,
             arguments.height
@@ -106,11 +118,6 @@ if __name__ == '__main__':
             y_new,
             arguments.path
             )
-        image = image.resize((x_new, y_new))
+
+        image = image.resize((x_new, y_new), Image.ANTIALIAS)
         image.save(os.path.join(arguments.output, file_name_out))
-
-    except IOError as error:
-        print('ERROR: {}'.format(error))
-
-    except FileNotFoundError as error:
-        print('ERROR: {}'.format(error))
