@@ -57,12 +57,9 @@ def pprint_message():
     print('Image ratio changed')
 
 
-def check_ratio(x_size, y_size, width, height):
-    x_ratio = width / x_size
-    y_ratio = height / y_size
-    if x_ratio != y_ratio:
-        pprint_message()
-    
+def get_ratio(size, argument):
+    return argument / size
+
 
 def get_new_size(x_size, y_size, scale, width, height):
 
@@ -72,15 +69,17 @@ def get_new_size(x_size, y_size, scale, width, height):
         return x_size, y_size
 
     if width and height:
+        if get_ratio(x_size, width) != get_ratio(y_size, height):
+            pprint_message()
         return width, height
 
     if width and not height:
-        ratio = width / x_size
+        ratio = get_ratio(x_size, width)
         height = int(y_size * ratio)
         return width, height
 
     if height and not width:
-        ratio = height / y_size
+        ratio = get_ratio(y_size, height)
         width = int(x_size * ratio)
         return width, height
 
@@ -114,14 +113,6 @@ if __name__ == '__main__':
         sys.exit('ERROR_exit: {}'.format(error))
 
     x_base, y_base = image.size
-
-    if arguments.width and arguments.height:
-        check_ratio(
-            x_base,
-            y_base,
-            arguments.width,
-            arguments.height
-            )
     x_new, y_new = get_new_size(
         x_base,
         y_base,
