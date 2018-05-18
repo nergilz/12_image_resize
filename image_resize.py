@@ -1,6 +1,7 @@
 import argparse
 from PIL import Image
 import os
+import sys
 
 
 def get_arguments():
@@ -51,9 +52,6 @@ def check_arguments(scale, width, height, output):
     if not os.path.isdir(output):
         parser.error('ERROR: not find directory {}'.format(output))
 
-    if (width and not height) or (height and not width):
-        print('The proportions of the image will be changed!')
-
 
 def get_new_size(x_size, y_size, scale, width, height):
 
@@ -103,21 +101,21 @@ if __name__ == '__main__':
 
     except IOError as error:
         print('ERROR: {}'.format(error))
+        sys.exit(1)
 
-    else:
-        x_base, y_base = image.size
-        x_new, y_new = get_new_size(
-            x_base,
-            y_base,
-            arguments.scale,
-            arguments.width,
-            arguments.height
-            )
-        file_name_out = get_file_name_out(
-            x_new,
-            y_new,
-            arguments.path
-            )
+    x_base, y_base = image.size
+    x_new, y_new = get_new_size(
+        x_base,
+        y_base,
+        arguments.scale,
+        arguments.width,
+        arguments.height
+        )
+    file_name_out = get_file_name_out(
+        x_new,
+        y_new,
+        arguments.path
+        )
 
-        image = image.resize((x_new, y_new), Image.ANTIALIAS)
-        image.save(os.path.join(arguments.output, file_name_out))
+    image = image.resize((x_new, y_new), Image.ANTIALIAS)
+    image.save(os.path.join(arguments.output, file_name_out))
