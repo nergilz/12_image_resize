@@ -53,8 +53,10 @@ def check_arguments(scale, width, height, output):
         parser.error('ERROR: not find directory {}'.format(output))
 
 
-def pprint_message():
-    print('Image ratio changed')
+def get_ratio_check(x_size, y_size, width, height):
+    if width and height:
+        if get_ratio(x_size, width) != get_ratio(y_size, height):
+            return True
 
 
 def get_ratio(size, argument):
@@ -69,8 +71,6 @@ def get_new_size(x_size, y_size, scale, width, height):
         return x_size, y_size
 
     if width and height:
-        if get_ratio(x_size, width) != get_ratio(y_size, height):
-            pprint_message()
         return width, height
 
     if width and not height:
@@ -106,13 +106,24 @@ if __name__ == '__main__':
         arguments.height,
         arguments.output
         )
+
     try:
         image = Image.open(arguments.path)
-
     except IOError as error:
         sys.exit('ERROR_exit: {}'.format(error))
 
     x_base, y_base = image.size
+
+    ratio_check = get_ratio_check(
+        x_base,
+        y_base,
+        arguments.width,
+        arguments.height
+        )
+
+    if ratio_check:
+        print('Image ratio changed')
+
     x_new, y_new = get_new_size(
         x_base,
         y_base,
@@ -125,6 +136,5 @@ if __name__ == '__main__':
         y_new,
         arguments.path
         )
-
     image = image.resize((x_new, y_new), Image.ANTIALIAS)
     image.save(os.path.join(arguments.output, file_name_out))
